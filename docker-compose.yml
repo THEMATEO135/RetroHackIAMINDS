@@ -1,0 +1,92 @@
+services:
+  # API Backend con modelo LSTM
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: uptc-energy-api
+    ports:
+      - "8080:8000"
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./fase1_modelado_predictivo/models:/app/fase1_modelado_predictivo/models:ro
+      - ./consumos_uptc_hackday:/app/consumos_uptc_hackday:ro
+    depends_on:
+      - ollama
+    networks:
+      - uptc-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend Streamlit
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: uptc-energy-frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000
+      - OLLAMA_URL=http://ollama:11434
+    volumes:
+      - ./consumos_uptc_hackday:/app/consumos_uptc_hackday:ro
+    command: streamlit run app/streamlit_app.py --server.port=8501 --server.address=0.0.0.0
+    depends_on:
+      - api
+    networks:
+      - uptc-network
+    restart: unless-stopped
+
+  # Ollama con GPU NVIDIA
+  ollama:
+    image: ollama/ollama:latest
+    container_name: uptc-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - uptc-network
+    restart: unless-stopped
+    environment:
+      - OLLAMA_NUM_PARALLEL=4
+      - OLLAMA_MAX_LOADED_MODELS=2
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # Ollama setup - descarga modelo al iniciar
+  ollama-setup:
+    image: curlimages/curl:latest
+    container_name: uptc-ollama-setup
+    depends_on:
+      - ollama
+    networks:
+      - uptc-network
+    entrypoint: >
+      sh -c "
+        echo 'Esperando a Ollama...' &&
+        sleep 15 &&
+        echo 'Descargando modelo qwen2.5:7b (mas inteligente)...' &&
+        curl -X POST http://ollama:11434/api/pull -d '{\"name\": \"qwen2.5:7b\"}' &&
+        echo 'Modelo listo!'
+      "
+    restart: "no"
+
+networks:
+  uptc-network:
+    driver: bridge
+
+volumes:
+  ollama-data:

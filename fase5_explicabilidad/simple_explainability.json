@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-01-29T17:38:35.141834",
+  "top_features": [
+    {
+      "feature": "ocupacion_estimada",
+      "importance": 0.887217
+    },
+    {
+      "feature": "sede_Tunja",
+      "importance": 0.536243
+    },
+    {
+      "feature": "sector_Laboratorios",
+      "importance": 0.397822
+    },
+    {
+      "feature": "hora_cos",
+      "importance": 0.069181
+    },
+    {
+      "feature": "hora_sin",
+      "importance": 0.060624
+    },
+    {
+      "feature": "sector_Comedores",
+      "importance": 0.043939
+    },
+    {
+      "feature": "sector_Auditorios",
+      "importance": 0.039708
+    },
+    {
+      "feature": "sede_Chiquinquira",
+      "importance": 0.025078
+    },
+    {
+      "feature": "temperatura_exterior",
+      "importance": 0.005446
+    },
+    {
+      "feature": "sector_Oficinas",
+      "importance": 0.003363
+    }
+  ],
+  "confianza": 23.3568,
+  "explicacion": "Importancia por permutacion. Menor varianza del residual = mayor confianza."
+}
